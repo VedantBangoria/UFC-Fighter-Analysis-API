@@ -7,18 +7,7 @@ from sklearn.metrics import accuracy_score
 import requests
 
 
-url = "http://localhost:11434/api/generate"
 
-payload = {
-    "model": "gemma3:4b",
-    "prompt": "2 plus 2",
-    "stream": False
-}
-
-response = requests.post(url, json=payload)
-data = response.json()
-
-print(data)
 
 
 #load the data
