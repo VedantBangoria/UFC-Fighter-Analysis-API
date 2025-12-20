@@ -1,24 +1,21 @@
 #gradient boost algorithm to classify fighters
 import pandas as pd
 from pandas.core.frame import treat_as_nested
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-import requests
+import warnings
+from joblib import dump
 
 
-
+# Suppress all warnings
+warnings.filterwarnings("ignore")
 
 
 #load the data
-df = pd.read_csv('cleanedFighterStatsClassifications.csv')
-writer = open("cleanedFighterTrainingData.csv","w")
-reader = open('cleanedFighterStatsClassifications.csv', "r")
-for line in reader.readlines():
-    line = line.strip().split(",")
-    writer.write(",".join(line[:-1]) + "\n")
+df = pd.read_csv('cleanedFighterFinalTrainingData.csv')
 
-
+#some columns represent percentages --> convert to a proper numerical format
 percent_columns = ["Str_Acc", "Str_Def", "TD_Acc", "TD_Def"]
 
 for col in percent_columns:
@@ -30,35 +27,44 @@ numeric_columns = ["SLpM", "SApM", "TD_Avg", "Sub_Avg"]
 for col in numeric_columns:
     df[col] = df[col].astype(float)
 
-    
-x = df[["SLpM","Str_Acc","SApM","Str_Def","TD_Avg","TD_Acc","TD_Def","Sub_Avg"]]
-y = df['classification']
-xTrain, xTest, yTrain, yTest = train_test_split(x,y, test_size =.8, random_state = 42)
 
-classifier = GradientBoostingClassifier(n_estimators=50, learning_rate=0.1, max_depth = 10)
+
+
+allFeatures = [
+    "SLpM","Str_Acc","SApM","Str_Def","TD_Avg","TD_Acc","TD_Def","Sub_Avg",
+]
+
+new_features = ['SLpM', 'Str_Acc', 'SApM', "TD_Acc","TD_Def"]
+
+#converts classifications from training data into numerical format
+def numerical(row):
+    if(row['classification'] == 'grappler'):
+        return 0
+    else:
+        return 1
+
+
+df['classification'] = df.apply(numerical, axis=1)
+
+x = df[new_features]
+y = df['classification']
+
+xTrain, xTest, yTrain, yTest = train_test_split(x,y, test_size =.2, random_state = 42)
+
+classifier = RandomForestClassifier(n_estimators=500, max_depth = 5, min_samples_leaf=5,random_state=42)
 
 classifier.fit(xTrain,yTrain)
 
 predictions = classifier.predict(xTest)
-accuracy = accuracy_score( yTest, predictions)
+accuracy = accuracy_score(yTest, predictions)
 print(accuracy)
 
-test_fighters = pd.DataFrame([
-    [4.5, 55, 3.8, 70, 5.0, 90, 0, 0.5],
-    [3.8, 50, 4.0, 65, 4.8, 85, 0, 0.6],
-    [5.0, 60, 3.5, 68, 5.2, 88, 0, 0.7],
-    [4.2, 52, 4.1, 72, 4.9, 82, 0, 0.5],
-    [3.5, 48, 4.3, 70, 4.5, 80, 0, 0.4],
-    [4.8, 55, 3.9, 75, 5.0, 86, 0, 0.6],
-    [4.0, 50, 4.5, 68, 4.7, 84, 0, 0.5],
-    [3.9, 53, 4.2, 70, 4.8, 82, 0, 0.4],
-    [4.5, 57, 3.8, 72, 5.1, 85, 0, 0.6],
-    [4.3, 54, 4.0, 68, 4.9, 83, 0, 0.5]
-], columns=["SLpM","Str_Acc","SApM","Str_Def","TD_Avg","TD_Acc","TD_Def","Sub_Avg"])
+dump(classifier, 'fighter_classifier_model.joblib')
 
-# Predict with your classifier
-predictions = classifier.predict(test_fighters)
-
-for i, pred in enumerate(predictions, start=1):
-    print(f"Fighter {i} predicted class: {pred}") 
-
+#code to measure if a fighter is more of a grappler than a striker or vice versa
+'''
+for i in range(len(df['classification'])):
+    X_new = df.iloc[[i]][new_features]
+    numerical_class = sum(([tree.predict(X_new)[0] for tree in classifier.estimators_]))/len(classifier.estimators_)
+    print(f"Fighter lean score: {numerical_class} vs classification: {df.iloc[[i]]['classification'].values[0]}")
+'''
