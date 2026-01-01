@@ -1,0 +1,21 @@
+# UFC Fighter Analysis API - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Data Processing
+pandas==2.3.2
+numpy==1.26.2
+
+# Machine Learning
+scikit-learn==1.3.2
+catboost==1.2.8
+
+# Model Serialization
+joblib==1.5.2
+
+# Data Validation (included with FastAPI but listed for clarity)
+pydantic==2.5.0
+

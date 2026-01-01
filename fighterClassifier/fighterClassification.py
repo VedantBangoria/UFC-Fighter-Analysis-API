@@ -1,7 +1,7 @@
 #gradient boost algorithm to classify fighters
 import pandas as pd
 from pandas.core.frame import treat_as_nested
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import  RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import warnings
@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 
 
 #load the data
-df = pd.read_csv('cleanedFighterFinalTrainingData.csv')
+df = pd.read_csv('fighterClassifier/cleanedFighterFinalTrainingData.csv')
 
 #some columns represent percentages --> convert to a proper numerical format
 percent_columns = ["Str_Acc", "Str_Def", "TD_Acc", "TD_Def"]
@@ -62,6 +62,7 @@ print(accuracy)
 dump(classifier, 'fighter_classifier_model.joblib')
 
 #code to measure if a fighter is more of a grappler than a striker or vice versa
+
 '''
 for i in range(len(df['classification'])):
     X_new = df.iloc[[i]][new_features]
