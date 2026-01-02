@@ -58,7 +58,9 @@ The system uses two trained ML models:
 ┌─────────────────────────────────┐
 │   Java API (Spark)              │
 │   Port: 8080                    │
+│   - /                           │
 │   - /classify                   │
+│   - /percentageStriker         │
 │   - /predict                    │
 └──────┬──────────────────────────┘
        │
@@ -127,8 +129,8 @@ UFC-Fighter-Analysis-API/
 ├── fighterClassifier/               # Model training code (development)
 │   └── fighterClassification.py     # Fighter classifier training script
 │
-├── venv/                            # Python virtual environment
 ├── requirements.txt                 # Python dependencies
+├── setup.sh                         # Automated setup script
 └── README.md                        # This file
 ```
 
@@ -146,6 +148,31 @@ Before setting up the project, ensure you have the following installed:
 
 ## 🚀 Installation & Setup
 
+### Quick Setup (Automated)
+
+**Recommended:** Use the provided setup script for automated installation:
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd UFC-Fighter-Analysis-API
+
+# Run the setup script
+chmod +x setup.sh  # Make executable (if needed)
+./setup.sh
+```
+
+The script will automatically:
+- ✅ Check prerequisites (Java, Python)
+- ✅ Create Python virtual environment
+- ✅ Install all Python dependencies
+- ✅ Build the Java project
+- ✅ Verify model files
+
+### Manual Setup
+
+If you prefer to set up manually, follow these steps:
+
 ### Step 1: Clone the Repository
 
 ```bash
@@ -155,12 +182,19 @@ cd UFC-Fighter-Analysis-API
 
 ### Step 2: Python Environment Setup
 
+Since the virtual environment is not included in the repository (see `.gitignore`), you need to create it:
+
 ```bash
 # Navigate to project root
 cd /path/to/UFC-Fighter-Analysis-API
 
+# Create Python virtual environment
+python3 -m venv venv
+
 # Activate the virtual environment
-source venv/bin/activate
+source venv/bin/activate  # On macOS/Linux
+# OR
+venv\Scripts\activate     # On Windows
 
 # Install Python dependencies
 pip install -r requirements.txt
@@ -169,6 +203,22 @@ pip install -r requirements.txt
 ls ufcAPI/*.joblib
 # Should show: fighterClassifier.joblib and outcomePredictor.joblib
 ```
+
+**Alternative: Use the automated setup script** (recommended):
+```bash
+# Make script executable (if needed)
+chmod +x setup.sh
+
+# Run the setup script
+./setup.sh
+```
+
+This script will automatically:
+- Check prerequisites (Java, Python)
+- Create the virtual environment
+- Install all Python dependencies
+- Build the Java project
+- Verify model files
 
 ### Step 3: Build Java Project
 
@@ -241,8 +291,14 @@ curl "http://127.0.0.1:8000/classifyFighter?fighterName=John%20Doe&SLpM=3.5&Str_
 #### Test Java API (Outer)
 
 ```bash
+# Test root endpoint
+curl http://localhost:8080/
+
 # Test fighter classification endpoint
 curl "http://localhost:8080/classify?fighterName=John%20Doe&SLpM=3.5&Str_Acc=50.0&SApM=2.5&TD_Acc=60.0&TD_Def=70.0"
+
+# Test striker percentage endpoint
+curl "http://localhost:8080/percentageStriker?fighterName=John%20Doe&SLpM=3.5&Str_Acc=50.0&SApM=2.5&TD_Acc=60.0&TD_Def=70.0"
 
 # Test outcome prediction (POST request)
 curl -X POST http://localhost:8080/predict \
@@ -263,7 +319,9 @@ curl -X POST http://localhost:8080/predict \
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
-| `GET` | `/classify` | Classify fighter style | `fighterName`, `SLpM`, `Str_Acc`, `SApM`, `TD_Acc`, `TD_Def` |
+| `GET` | `/` | API status and information | None |
+| `GET` | `/classify` | Classify fighter style (striker/grappler) | `fighterName`, `SLpM`, `Str_Acc`, `SApM`, `TD_Acc`, `TD_Def` |
+| `GET` | `/percentageStriker` | Get striker percentage score (0-1) | `fighterName`, `SLpM`, `Str_Acc`, `SApM`, `TD_Acc`, `TD_Def` |
 | `POST` | `/predict` | Predict fight outcome | JSON body with `DetailPackage` |
 
 ### Python API (Inner - Port 8000)
@@ -306,8 +364,13 @@ cd ufcAPI
 
 **"Module not found" in Python**
 ```bash
+# Create virtual environment if it doesn't exist
+python3 -m venv venv
+
 # Ensure virtual environment is activated
-source venv/bin/activate
+source venv/bin/activate  # On macOS/Linux
+# OR
+venv\Scripts\activate    # On Windows
 
 # Reinstall dependencies
 pip install -r requirements.txt
@@ -337,7 +400,8 @@ lsof -ti:8080 | xargs kill -9
 - The `AdvancedStats/` and `fighterClassifier/` directories contain training code and are not required for API operation
 - Model files (`.joblib`) must be present in `ufcAPI/` directory for the API to function
 - Always start the Python API before the Java API
-- The virtual environment should be activated when running the Python API
+- The virtual environment (`venv/`) is excluded from version control (see `.gitignore`) - you must create it during setup
+- Use the provided `setup.sh` script for automated setup, or follow the manual steps above
 
 ---
 

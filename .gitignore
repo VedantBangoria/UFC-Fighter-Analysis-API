@@ -60,3 +60,11 @@ venv.bak/
 
 # macOS
 .DS_Store
+
+# API runtime files
+*.log
+*.pid
+python_api.log
+java_api.log
+.python_api.pid
+.java_api.pid
