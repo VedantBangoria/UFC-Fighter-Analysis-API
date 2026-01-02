@@ -58,4 +58,4 @@ def predictOutcome(data: OutcomeRequest):
 
 if __name__ == "__main__":
     # host="0.0.0.0" allows access from other devices on the network if needed
-    uvicorn.run("modelAccessor:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("modelAccessor:app", host="127.0.0.1", port=8000, reload=True)
